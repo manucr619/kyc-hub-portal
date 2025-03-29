@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -9,12 +8,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { mockTransactions } from '@/data/mockData';
 import { Transaction } from '@/types/kyc';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { TransactionFlow } from '@/components/TransactionFlow';
 
 export default function Transactions() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<string>('all');
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
 
-  // Filter transactions based on search query and active tab
   const filteredTransactions = mockTransactions.filter(transaction => {
     const matchesSearch = 
       transaction.referenceNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -26,7 +27,6 @@ export default function Transactions() {
     return matchesSearch && transaction.status.toLowerCase() === activeTab.toLowerCase();
   });
 
-  // Calculate summary statistics
   const stats = {
     total: mockTransactions.length,
     pending: mockTransactions.filter(t => t.status === 'PENDING').length,
@@ -35,12 +35,10 @@ export default function Transactions() {
     flagged: mockTransactions.filter(t => t.status === 'FLAGGED').length,
   };
 
-  // Format currency amount
   const formatCurrency = (amount: number, currency: string) => {
     return `${currency} ${amount.toLocaleString()}`;
   };
 
-  // Format date
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString();
   };
@@ -70,7 +68,6 @@ export default function Transactions() {
         </div>
       </div>
 
-      {/* Summary Cards */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-5">
         <Card>
           <CardHeader className="py-3">
@@ -126,7 +123,6 @@ export default function Transactions() {
         </Card>
       </div>
 
-      {/* Transactions Table with Tabs */}
       <Card>
         <CardHeader>
           <CardTitle>Transaction List</CardTitle>
@@ -164,7 +160,11 @@ export default function Transactions() {
                   <TableBody>
                     {filteredTransactions.length > 0 ? (
                       filteredTransactions.map((transaction: Transaction) => (
-                        <TableRow key={transaction.id}>
+                        <TableRow 
+                          key={transaction.id} 
+                          className="cursor-pointer hover:bg-muted"
+                          onClick={() => setSelectedTransaction(transaction)}
+                        >
                           <TableCell className="font-medium">{transaction.referenceNumber}</TableCell>
                           <TableCell>{formatDate(transaction.date)}</TableCell>
                           <TableCell>{transaction.originatorId}</TableCell>
@@ -206,6 +206,17 @@ export default function Transactions() {
           </Tabs>
         </CardContent>
       </Card>
+
+      <Dialog open={!!selectedTransaction} onOpenChange={() => setSelectedTransaction(null)}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Transaction Flow</DialogTitle>
+          </DialogHeader>
+          {selectedTransaction && (
+            <TransactionFlow transaction={selectedTransaction} />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
