@@ -6,9 +6,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowRightLeft, AlertTriangle, CheckCircle, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { mockTransactions } from '@/data/mockData';
+import { mockTransactions, mockBanks } from '@/data/mockData';
 import { Transaction } from '@/types/kyc';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { TransactionFlow } from '@/components/TransactionFlow';
 
 export default function Transactions() {
@@ -17,15 +17,23 @@ export default function Transactions() {
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
 
   const filteredTransactions = mockTransactions.filter(transaction => {
+    const originatorBank = mockBanks.find(bank => bank.id === transaction.originatorId);
+    const beneficiaryBank = mockBanks.find(bank => bank.id === transaction.beneficiaryId);
+    
     const matchesSearch = 
       transaction.referenceNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
       transaction.currency.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      transaction.originatorId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      transaction.beneficiaryId.toLowerCase().includes(searchQuery.toLowerCase());
+      (originatorBank?.name?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+      (beneficiaryBank?.name?.toLowerCase() || '').includes(searchQuery.toLowerCase());
     
     if (activeTab === 'all') return matchesSearch;
     return matchesSearch && transaction.status.toLowerCase() === activeTab.toLowerCase();
   });
+
+  const getBankName = (bankId: string) => {
+    const bank = mockBanks.find(bank => bank.id === bankId);
+    return bank ? bank.name : bankId;
+  };
 
   const stats = {
     total: mockTransactions.length,
@@ -167,8 +175,8 @@ export default function Transactions() {
                         >
                           <TableCell className="font-medium">{transaction.referenceNumber}</TableCell>
                           <TableCell>{formatDate(transaction.date)}</TableCell>
-                          <TableCell>{transaction.originatorId}</TableCell>
-                          <TableCell>{transaction.beneficiaryId}</TableCell>
+                          <TableCell>{getBankName(transaction.originatorId)}</TableCell>
+                          <TableCell>{getBankName(transaction.beneficiaryId)}</TableCell>
                           <TableCell>{formatCurrency(transaction.amount, transaction.currency)}</TableCell>
                           <TableCell>
                             {transaction.riskScore ? (
@@ -211,6 +219,9 @@ export default function Transactions() {
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
             <DialogTitle>Transaction Flow</DialogTitle>
+            <DialogDescription>
+              Transaction reference: {selectedTransaction?.referenceNumber}
+            </DialogDescription>
           </DialogHeader>
           {selectedTransaction && (
             <TransactionFlow transaction={selectedTransaction} />

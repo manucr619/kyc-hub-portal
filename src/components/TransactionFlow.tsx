@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/card';
 import { ArrowRight } from 'lucide-react';
 import { Transaction } from '@/types/kyc';
 import { cn } from '@/lib/utils';
+import { mockBanks } from '@/data/mockData';
 
 interface TransactionFlowProps {
   transaction: Transaction;
@@ -25,6 +26,10 @@ export const TransactionFlow = ({ transaction }: TransactionFlowProps) => {
     }
   };
 
+  // Find bank names based on IDs
+  const originatorBank = mockBanks.find(bank => bank.id === transaction.originatorId);
+  const beneficiaryBank = mockBanks.find(bank => bank.id === transaction.beneficiaryId);
+
   return (
     <Card className="p-6">
       <div className="flex items-center justify-between gap-4">
@@ -33,7 +38,7 @@ export const TransactionFlow = ({ transaction }: TransactionFlowProps) => {
           <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
             🏦
           </div>
-          <div className="text-sm">{transaction.originatorId}</div>
+          <div className="text-sm font-semibold">{originatorBank?.name || transaction.originatorId}</div>
         </div>
 
         <div className="flex-1 flex items-center justify-center gap-2">
@@ -46,7 +51,7 @@ export const TransactionFlow = ({ transaction }: TransactionFlowProps) => {
           <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center">
             💳
           </div>
-          <div className="text-sm">{transaction.beneficiaryId}</div>
+          <div className="text-sm font-semibold">{beneficiaryBank?.name || transaction.beneficiaryId}</div>
         </div>
       </div>
 
