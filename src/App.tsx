@@ -1,9 +1,14 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
+import { KycLayout } from "./components/KycLayout";
+import Dashboard from "./pages/Dashboard";
+import Banks from "./pages/Banks";
+import Customers from "./pages/Customers"; 
+import Credentials from "./pages/Credentials";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -15,8 +20,12 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route path="/" element={<KycLayout />}>
+            <Route index element={<Dashboard />} />
+            <Route path="banks" element={<Banks />} />
+            <Route path="customers" element={<Customers />} />
+            <Route path="credentials" element={<Credentials />} />
+          </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
